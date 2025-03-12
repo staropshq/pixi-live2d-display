@@ -14,12 +14,16 @@ async function main() {
     const app = new Application({
         resizeTo: window,
         view: canvas,
+        // PixiJS v8 requires explicit renderer configuration
+        preference: "webgl",
     });
     (window as any).app = app;
 
     const model = await Live2DModel.from(modelURL);
 
-    app.stage.addChild(model);
+    // Cast to any to bypass type checking since Live2DModel extends Container
+    // but TypeScript can't see the compatibility with PixiJS v8's ContainerChild
+    app.stage.addChild(model as any);
 }
 
 main().then();

@@ -1,13 +1,10 @@
 (function(global, factory) {
-  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("@pixi/core"), require("@pixi/display")) : typeof define === "function" && define.amd ? define(["exports", "@pixi/core", "@pixi/display"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory((global.PIXI = global.PIXI || {}, global.PIXI.live2d = global.PIXI.live2d || {}), global.PIXI, global.PIXI));
-})(this, function(exports2, core, display) {
+  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("@pixi/core"), require("@pixi/display"), require("pixi.js")) : typeof define === "function" && define.amd ? define(["exports", "@pixi/core", "@pixi/display", "pixi.js"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory((global.PIXI = global.PIXI || {}, global.PIXI.live2d = global.PIXI.live2d || {}), global.PIXI, global.PIXI, global.PIXI));
+})(this, function(exports2, core, display, pixi_js) {
   "use strict";var __defProp = Object.defineProperty;
 var __pow = Math.pow;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -249,6 +246,7 @@ var __async = (__this, __arguments, generator) => {
      */
     resetExpression() {
       this._setExpression(this.defaultExpression);
+      this.currentExpression = this.defaultExpression;
     }
     /**
      * Restores model's expression to {@link currentExpression}.
@@ -344,8 +342,7 @@ var __async = (__this, __arguments, generator) => {
     update(dt) {
       const dx = this.targetX - this.x;
       const dy = this.targetY - this.y;
-      if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON)
-        return;
+      if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return;
       const d = Math.sqrt(__pow(dx, 2) + __pow(dy, 2));
       const maxSpeed = MAX_SPEED / (1e3 / dt);
       let ax = maxSpeed * (dx / d) - this.vx;
@@ -1579,14 +1576,11 @@ var __async = (__this, __arguments, generator) => {
     let index = -1;
     return dispatch(0);
     function dispatch(i, err) {
-      if (err)
-        return Promise.reject(err);
-      if (i <= index)
-        return Promise.reject(new Error("next() called multiple times"));
+      if (err) return Promise.reject(err);
+      if (i <= index) return Promise.reject(new Error("next() called multiple times"));
       index = i;
       const fn = middleware[i];
-      if (!fn)
-        return Promise.resolve();
+      if (!fn) return Promise.resolve();
       try {
         return Promise.resolve(fn(context, dispatch.bind(null, i + 1)));
       } catch (err2) {
@@ -2343,7 +2337,7 @@ var __async = (__this, __arguments, generator) => {
   function onPointerMove(event) {
     this.onPointerMove(event);
   }
-  class Live2DTransform extends core.Transform {
+  class Live2DTransform extends pixi_js.Transform {
   }
   const tempPoint = new core.Point();
   const tempMatrix$1 = new core.Matrix();
@@ -3017,8 +3011,7 @@ var __async = (__this, __arguments, generator) => {
     getDrawableVertices(drawIndex) {
       if (typeof drawIndex === "string") {
         drawIndex = this.coreModel.getDrawDataIndex(drawIndex);
-        if (drawIndex === -1)
-          throw new TypeError("Unable to find drawable ID: " + drawIndex);
+        if (drawIndex === -1) throw new TypeError("Unable to find drawable ID: " + drawIndex);
       }
       return this.coreModel.getTransformedPoints(drawIndex).slice();
     }
@@ -3341,8 +3334,7 @@ var __async = (__this, __arguments, generator) => {
     createCoreModel(data) {
       const model = Live2DModelWebGL.loadModel(data);
       const error = Live2D.getError();
-      if (error)
-        throw error;
+      if (error) throw error;
       return model;
     },
     createInternalModel(coreModel, settings, options) {
@@ -4065,8 +4057,7 @@ var __async = (__this, __arguments, generator) => {
      * モデルを描画する
      */
     drawModel() {
-      if (this.getModel() == null)
-        return;
+      if (this.getModel() == null) return;
       this.saveProfile();
       this.doDrawModel();
       this.restoreProfile();
@@ -4414,8 +4405,7 @@ var __async = (__this, __arguments, generator) => {
         return;
       }
       const logPrint = CubismFramework.coreLogFunction;
-      if (!logPrint)
-        return;
+      if (!logPrint) return;
       const buffer = format.replace(/{(\d+)}/g, (m, k) => {
         return args[k];
       });
@@ -4431,10 +4421,8 @@ var __async = (__this, __arguments, generator) => {
      */
     static dumpBytes(logLevel, data, length) {
       for (let i = 0; i < length; i++) {
-        if (i % 16 == 0 && i > 0)
-          this.print(logLevel, "\n");
-        else if (i % 8 == 0 && i > 0)
-          this.print(logLevel, "  ");
+        if (i % 16 == 0 && i > 0) this.print(logLevel, "\n");
+        else if (i % 8 == 0 && i > 0) this.print(logLevel, "  ");
         this.print(logLevel, "{0} ", [data[i] & 255]);
       }
       this.print(logLevel, "\n");
@@ -6847,8 +6835,7 @@ var __async = (__this, __arguments, generator) => {
           if (layoutCount < layoutCountMaxValue && channelNo == checkChannelNo) {
             layoutCount += renderTextureNo < countPerSheetMod ? 1 : 0;
           }
-          if (layoutCount == 0)
-            ;
+          if (layoutCount == 0) ;
           else if (layoutCount == 1) {
             const clipContext = this._clippingContextListForMask[curClipIndex++];
             clipContext._layoutChannelNo = channelNo;
@@ -7034,16 +7021,12 @@ var __async = (__this, __arguments, generator) => {
   }
   class CubismRendererProfile_WebGL {
     setGlEnable(index, enabled) {
-      if (enabled)
-        this.gl.enable(index);
-      else
-        this.gl.disable(index);
+      if (enabled) this.gl.enable(index);
+      else this.gl.disable(index);
     }
     setGlEnableVertexAttribArray(index, enabled) {
-      if (enabled)
-        this.gl.enableVertexAttribArray(index);
-      else
-        this.gl.disableVertexAttribArray(index);
+      if (enabled) this.gl.enableVertexAttribArray(index);
+      else this.gl.disableVertexAttribArray(index);
     }
     save() {
       if (this.gl == null) {
@@ -8363,8 +8346,7 @@ var __async = (__this, __arguments, generator) => {
     getDrawableVertices(drawIndex) {
       if (typeof drawIndex === "string") {
         drawIndex = this.coreModel.getDrawableIndex(drawIndex);
-        if (drawIndex === -1)
-          throw new TypeError("Unable to find drawable ID: " + drawIndex);
+        if (drawIndex === -1) throw new TypeError("Unable to find drawable ID: " + drawIndex);
       }
       const arr = this.coreModel.getDrawableVertices(drawIndex).slice();
       for (let i = 0; i < arr.length; i += 2) {

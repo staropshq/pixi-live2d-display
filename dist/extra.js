@@ -4,10 +4,7 @@
   "use strict";var __defProp = Object.defineProperty;
 var __pow = Math.pow;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
   const tempBounds = new core.Rectangle();
   class HitAreaFrames extends graphics.Graphics {
@@ -37,7 +34,7 @@ var __publicField = (obj, key, value) => {
       });
     }
     onPointerMove(e) {
-      const hitAreaNames = this.parent.hitTest(e.data.global.x, e.data.global.y);
+      const hitAreaNames = this.parent.hitTest(e.global.x, e.global.y);
       this.texts.forEach((text2) => {
         text2.visible = hitAreaNames.includes(text2.text);
       });
@@ -47,10 +44,8 @@ var __publicField = (obj, key, value) => {
       const internalModel = this.parent.internalModel;
       const scale = 1 / Math.sqrt(__pow(this.transform.worldTransform.a, 2) + __pow(this.transform.worldTransform.b, 2));
       this.texts.forEach((text2) => {
-        this.lineStyle({
-          width: this.strokeWidth * scale,
-          color: text2.visible ? this.activeColor : this.normalColor
-        });
+        this.line.width = this.strokeWidth * scale;
+        this.line.color = text2.visible ? this.activeColor : this.normalColor;
         const bounds = internalModel.getDrawableBounds(
           internalModel.hitAreas[text2.text].index,
           tempBounds

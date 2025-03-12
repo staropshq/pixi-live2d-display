@@ -46,7 +46,7 @@ export class HitAreaFrames extends Graphics {
     }
 
     onPointerMove(e: FederatedPointerEvent) {
-        const hitAreaNames = (this.parent as Live2DModel).hitTest(e.data.global.x, e.data.global.y);
+        const hitAreaNames = (this.parent as Live2DModel).hitTest(e.global.x, e.global.y);
 
         this.texts.forEach((text) => {
             text.visible = hitAreaNames.includes(text.text);
@@ -64,10 +64,8 @@ export class HitAreaFrames extends Graphics {
             Math.sqrt(this.transform.worldTransform.a ** 2 + this.transform.worldTransform.b ** 2);
 
         this.texts.forEach((text) => {
-            this.lineStyle({
-                width: this.strokeWidth * scale,
-                color: text.visible ? this.activeColor : this.normalColor,
-            });
+            this.line.width = this.strokeWidth * scale;
+            this.line.color = text.visible ? this.activeColor : this.normalColor;
 
             const bounds = internalModel.getDrawableBounds(
                 internalModel.hitAreas[text.text]!.index,
