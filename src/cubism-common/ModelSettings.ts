@@ -1,5 +1,5 @@
 import { folderName } from "@/utils";
-import { utils } from "@pixi/core";
+import { utils } from "pixi.js";
 import type { JSONObject } from "../types/helpers";
 
 /**

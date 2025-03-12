@@ -2,7 +2,7 @@ import type { InternalModel, ModelSettings } from "@/cubism-common";
 import type { Live2DFactoryContext } from "@/factory";
 import { Live2DFactory } from "@/factory";
 import type { Middleware } from "@/utils/middleware";
-import { utils } from "@pixi/core";
+import { utils } from "pixi.js";
 
 declare global {
     interface File {

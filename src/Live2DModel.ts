@@ -3,9 +3,8 @@ import type { MotionManagerOptions } from "@/cubism-common/MotionManager";
 import { VOLUME } from "@/cubism-common/SoundManager";
 import type { Live2DFactoryOptions } from "@/factory/Live2DFactory";
 import { Live2DFactory } from "@/factory/Live2DFactory";
-import type { Rectangle, Renderer, Texture, Ticker } from "@pixi/core";
-import { Matrix, ObservablePoint, Point } from "@pixi/core";
-import { Container } from "@pixi/display";
+import type { Rectangle, Renderer, Texture, Ticker } from "pixi.js";
+import { Container, Matrix, ObservablePoint, Point } from "pixi.js";
 import { Automator, type AutomatorOptions } from "./Automator";
 import { Live2DTransform } from "./Live2DTransform";
 import type { JSONObject } from "./types/helpers";
@@ -189,23 +188,23 @@ export class Live2DModel<IM extends InternalModel = InternalModel> extends Conta
     ): Promise<boolean> {
         return index === undefined
             ? this.internalModel.motionManager.startRandomMotion(group, priority, {
-                sound: sound,
-                volume: volume,
-                expression: expression,
-                resetExpression: resetExpression,
-                crossOrigin: crossOrigin,
-                onFinish: onFinish,
-                onError: onError,
-            })
+                  sound: sound,
+                  volume: volume,
+                  expression: expression,
+                  resetExpression: resetExpression,
+                  crossOrigin: crossOrigin,
+                  onFinish: onFinish,
+                  onError: onError,
+              })
             : this.internalModel.motionManager.startMotion(group, index, priority, {
-                sound: sound,
-                volume: volume,
-                expression: expression,
-                resetExpression: resetExpression,
-                crossOrigin: crossOrigin,
-                onFinish: onFinish,
-                onError: onError,
-            });
+                  sound: sound,
+                  volume: volume,
+                  expression: expression,
+                  resetExpression: resetExpression,
+                  crossOrigin: crossOrigin,
+                  onFinish: onFinish,
+                  onError: onError,
+              });
     }
 
     /**

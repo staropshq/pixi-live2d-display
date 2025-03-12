@@ -1,7 +1,7 @@
 import type { ModelSettings } from "@/cubism-common/ModelSettings";
 import type { MotionManagerOptions } from "@/cubism-common/MotionManager";
 import { logger } from "@/utils";
-import { utils } from "@pixi/core";
+import { utils } from "pixi.js";
 import type { ExpressionManagerEvents } from "../types/events";
 import type { JSONObject, Mutable } from "../types/helpers";
 
