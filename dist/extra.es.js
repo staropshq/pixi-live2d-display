@@ -1,10 +1,7 @@
 var __defProp = Object.defineProperty;
 var __pow = Math.pow;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { Rectangle } from "@pixi/core";
 import { Graphics } from "@pixi/graphics";
 import { TextStyle, Text } from "@pixi/text";

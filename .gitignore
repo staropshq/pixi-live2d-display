@@ -12,6 +12,7 @@ core
 
 .DS_Store
 node_modules
+./node_modules
 
 # TypeScript
 *.tsbuildinfo
