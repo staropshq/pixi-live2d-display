@@ -1,7 +1,7 @@
 # Live2D runtime
-core
-!core/README.md
-!core/live2d.d.ts
+# core
+# !core/README.md
+# !core/live2d.d.ts
 
 # artifacts
 /build
