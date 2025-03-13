@@ -6,22 +6,22 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./src/types/index.d.ts",
+      "types": "./types/index.d.ts",
       "import": "./dist/index.es.js",
       "require": "./dist/index.js"
     },
     "./cubism2": {
-      "types": "./src/types/index.d.ts",
+      "types": "./types/index.d.ts",
       "import": "./dist/cubism2.es.js",
       "require": "./dist/cubism2.js"
     },
     "./cubism4": {
-      "types": "./src/types/index.d.ts",
+      "types": "./types/index.d.ts",
       "import": "./dist/cubism4.es.js",
       "require": "./dist/cubism4.js"
     },
     "./extra": {
-      "types": "./src/types/extra.d.ts",
+      "types": "./types/extra.d.ts",
       "import": "./dist/extra.es.js",
       "require": "./dist/extra.js"
     }
