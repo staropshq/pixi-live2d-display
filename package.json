@@ -44,7 +44,7 @@
     "doc": "node scripts/gen-docs.js",
     "serve-docs": "mkdocs serve -f docs/mkdocs.yml",
     "deploy": "gh-pages -d site",
-    "prepare": "npm run type && npm run build",
+    "prepare": "npm run build",
     "lint": "eslint . --config .eslintrc.cjs --rule \"prettier/prettier: error\"",
     "lint:fix": "npm run lint -- --fix"
   },
