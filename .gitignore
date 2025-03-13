@@ -8,7 +8,6 @@ core
 /*.build
 /lib
 /site
-/types
 
 .DS_Store
 node_modules
