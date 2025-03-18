@@ -50,20 +50,17 @@ export class SoundManager {
         audio.preload = "auto";
         // audio.autoplay = true;
         audio.crossOrigin = crossOrigin!;
-        audioListenersWeakMap.set(
-            audio,
-            {
-                ended: () => {
-                    this.dispose(audio);
-                    onFinish?.();
-                },
-                error: (e: ErrorEvent) => {
-                    this.dispose(audio);
-                    logger.warn(TAG, `Error occurred on "${file}"`, e.error);
-                    onError?.(e.error);
-                }
-            }
-        )
+        audioListenersWeakMap.set(audio, {
+            ended: () => {
+                this.dispose(audio);
+                onFinish?.();
+            },
+            error: (e: ErrorEvent) => {
+                this.dispose(audio);
+                logger.warn(TAG, `Error occurred on "${file}"`, e.error);
+                onError?.(e.error);
+            },
+        });
         audio.addEventListener("ended", audioListenersWeakMap.get(audio).ended);
         audio.addEventListener("error", audioListenersWeakMap.get(audio).error);
 
