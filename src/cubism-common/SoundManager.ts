@@ -3,6 +3,7 @@ import { logger, remove } from "@/utils";
 const TAG = "SoundManager";
 export const VOLUME = 0.5;
 
+const audioListenersWeakMap = new WeakMap();
 /**
  * Manages all the sounds.
  */
@@ -49,17 +50,22 @@ export class SoundManager {
         audio.preload = "auto";
         // audio.autoplay = true;
         audio.crossOrigin = crossOrigin!;
-
-        audio.addEventListener("ended", () => {
-            this.dispose(audio);
-            onFinish?.();
-        });
-
-        audio.addEventListener("error", (e: ErrorEvent) => {
-            this.dispose(audio);
-            logger.warn(TAG, `Error occurred on "${file}"`, e.error);
-            onError?.(e.error);
-        });
+        audioListenersWeakMap.set(
+            audio,
+            {
+                ended: () => {
+                    this.dispose(audio);
+                    onFinish?.();
+                },
+                error: (e: ErrorEvent) => {
+                    this.dispose(audio);
+                    logger.warn(TAG, `Error occurred on "${file}"`, e.error);
+                    onError?.(e.error);
+                }
+            }
+        )
+        audio.addEventListener("ended", audioListenersWeakMap.get(audio).ended);
+        audio.addEventListener("error", audioListenersWeakMap.get(audio).error);
 
         this.audios.push(audio);
 
@@ -138,6 +144,9 @@ export class SoundManager {
      */
     static dispose(audio: HTMLAudioElement): void {
         audio.pause();
+        audio.removeEventListener("ended", audioListenersWeakMap.get(audio).ended);
+        audio.removeEventListener("error", audioListenersWeakMap.get(audio).error);
+        audioListenersWeakMap.delete(audio);
         audio.removeAttribute("src");
 
         remove(this.audios, audio);
