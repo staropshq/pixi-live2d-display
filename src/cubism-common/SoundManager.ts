@@ -141,8 +141,8 @@ export class SoundManager {
      */
     static dispose(audio: HTMLAudioElement): void {
         audio.pause();
-        audio.removeEventListener("ended", audioListenersWeakMap.get(audio).ended);
-        audio.removeEventListener("error", audioListenersWeakMap.get(audio).error);
+        audio.removeEventListener("ended", audioListenersWeakMap.get(audio)?.ended);
+        audio.removeEventListener("error", audioListenersWeakMap.get(audio)?.error);
         audioListenersWeakMap.delete(audio);
         audio.removeAttribute("src");
 
