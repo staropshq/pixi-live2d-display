@@ -104,6 +104,15 @@ export default defineConfig(({ command, mode }) => {
                 enabled: true,
                 name: "chrome",
                 slowHijackESM: false,
+                providerOptions: {
+                    capabilities: {
+                        "goog:chromeOptions": {
+                            args: [
+                                "--autoplay-policy=no-user-gesture-required"
+                            ],
+                        },
+                    },
+                },
             },
             setupFiles: ["./test/setup.ts"],
             sequence: {
