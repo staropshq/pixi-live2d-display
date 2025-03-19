@@ -386,6 +386,9 @@ describe("uses fading durations", () => {
 
         manager.update(coreModel, 1000 * 50 + 100);
         expect(manager.playing).to.be.false;
+        
+        // waiting for previous motion to finish
+        await new Promise(resolve => setTimeout(resolve, 4000));
 
         await expect(manager.startMotion("Idle", 0)).resolves.toBe(true);
 
