@@ -1,6 +1,6 @@
 import { testEachModel } from "../env";
 import { createModel } from "../utils";
-import { makeTestSound } from "../makeTestSound";
+import { makeTestSound } from "../make-test-sound";
 
 testEachModel(
     "speak 1000 times",
