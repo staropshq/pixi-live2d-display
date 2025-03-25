@@ -107,9 +107,7 @@ export default defineConfig(({ command, mode }) => {
                 providerOptions: {
                     capabilities: {
                         "goog:chromeOptions": {
-                            args: [
-                                "--autoplay-policy=no-user-gesture-required"
-                            ],
+                            args: ["--autoplay-policy=no-user-gesture-required"],
                         },
                     },
                 },
