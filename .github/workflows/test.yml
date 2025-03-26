@@ -49,15 +49,20 @@ jobs:
       - run: npm run type
       - run: npm run build
 
-      
+
       - name: Commit files
         run: |
           git config --global user.name 'RaSan147'
           git config --global user.email '34002411+RaSan147@users.noreply.github.com'
-          git add --all
-          git commit -am "Automated report"
-          git push
 
+          # Check if there are changes
+          if ! git diff --quiet; then
+            git add --all
+            git commit -m "Automated report"
+            git push
+          else
+            echo "No changes to commit."
+          fi
 
 
       - uses: actions/upload-artifact@v4
