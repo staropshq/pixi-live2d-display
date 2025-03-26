@@ -120,6 +120,18 @@ export default defineConfig(({ command, mode }) => {
                     override async sort(files: Parameters<BaseSequencer["sort"]>[0]) {
                         files = await super.sort(files);
 
+                        // stability tests are slow, it will drag others leg behind
+                        // so we put them at the last
+                        const stabilityTestFiles: typeof files = [];
+
+                        files = files.filter(([project, file]) => {
+                            if (file.includes("stability")) {
+                                stabilityTestFiles.push([project, file]);
+                                return false;
+                            }
+                            return true;
+                        });
+
                         const bundleTestFiles: typeof files = [];
 
                         files = files.filter(([project, file]) => {
@@ -130,7 +142,7 @@ export default defineConfig(({ command, mode }) => {
                             return true;
                         });
 
-                        return [...files, ...bundleTestFiles];
+                        return [...files, ...stabilityTestFiles];
                     }
                 },
             },
