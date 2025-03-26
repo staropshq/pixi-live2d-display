@@ -298,9 +298,9 @@ class ExpressionManager extends utils.EventEmitter {
   destroy() {
     this.destroyed = true;
     this.emit("destroy");
-    const self = this;
-    self.definitions = void 0;
-    self.expressions = void 0;
+    const self2 = this;
+    self2.definitions = void 0;
+    self2.expressions = void 0;
   }
 }
 const EPSILON = 0.01;
@@ -729,6 +729,11 @@ class MotionState {
 }
 const TAG$2 = "SoundManager";
 const VOLUME = 0.5;
+const audioListenersWeakMap = /* @__PURE__ */ new WeakMap();
+const audioCanplaythroughWeakMap = /* @__PURE__ */ new WeakMap();
+const audioContextWeakMap = /* @__PURE__ */ new WeakMap();
+const audioAnalyserWeakMap = /* @__PURE__ */ new WeakMap();
+const audioSourceWeakMap = /* @__PURE__ */ new WeakMap();
 class SoundManager {
   /**
    * Global volume that applies to all the sounds.
@@ -754,15 +759,19 @@ class SoundManager {
     audio.volume = this._volume;
     audio.preload = "auto";
     audio.crossOrigin = crossOrigin;
-    audio.addEventListener("ended", () => {
-      this.dispose(audio);
-      onFinish == null ? void 0 : onFinish();
+    audioListenersWeakMap.set(audio, {
+      ended: () => {
+        this.dispose(audio);
+        onFinish == null ? void 0 : onFinish();
+      },
+      error: (e) => {
+        this.dispose(audio);
+        logger.warn(TAG$2, `Error occurred on "${file}"`, e.error);
+        onError == null ? void 0 : onError(e.error);
+      }
     });
-    audio.addEventListener("error", (e) => {
-      this.dispose(audio);
-      logger.warn(TAG$2, `Error occurred on "${file}"`, e.error);
-      onError == null ? void 0 : onError(e.error);
-    });
+    audio.addEventListener("ended", audioListenersWeakMap.get(audio).ended);
+    audio.addEventListener("error", audioListenersWeakMap.get(audio).error);
     this.audios.push(audio);
     return audio;
   }
@@ -781,12 +790,14 @@ class SoundManager {
       if (audio.readyState === audio.HAVE_ENOUGH_DATA) {
         resolve();
       } else {
+        audioCanplaythroughWeakMap.set(audio, resolve);
         audio.addEventListener("canplaythrough", resolve);
       }
     });
   }
   static addContext(audio) {
     const context = new AudioContext();
+    audioContextWeakMap.set(audio, context);
     this.contexts.push(context);
     return context;
   }
@@ -799,6 +810,8 @@ class SoundManager {
     analyser.smoothingTimeConstant = 0.85;
     source.connect(analyser);
     analyser.connect(context.destination);
+    audioSourceWeakMap.set(audio, source);
+    audioAnalyserWeakMap.set(audio, analyser);
     this.analysers.push(analyser);
     return analyser;
   }
@@ -825,8 +838,25 @@ class SoundManager {
    * @param audio - An audio element.
    */
   static dispose(audio) {
+    var _a, _b;
     audio.pause();
+    audio.removeEventListener("ended", (_a = audioListenersWeakMap.get(audio)) == null ? void 0 : _a.ended);
+    audio.removeEventListener("error", (_b = audioListenersWeakMap.get(audio)) == null ? void 0 : _b.error);
+    audio.removeEventListener("canplaythrough", audioCanplaythroughWeakMap.get(audio));
+    audioListenersWeakMap.delete(audio);
+    audioCanplaythroughWeakMap.delete(audio);
+    const context = audioContextWeakMap.get(audio);
+    audioContextWeakMap.delete(audio);
+    context == null ? void 0 : context.close();
+    const analyser = audioAnalyserWeakMap.get(audio);
+    audioAnalyserWeakMap.delete(audio);
+    analyser == null ? void 0 : analyser.disconnect();
+    const source = audioSourceWeakMap.get(audio);
+    audioSourceWeakMap.delete(audio);
+    source == null ? void 0 : source.disconnect();
     audio.removeAttribute("src");
+    remove(this.analysers, analyser);
+    remove(this.contexts, context);
     remove(this.audios, audio);
   }
   /**
@@ -848,6 +878,246 @@ __publicField(SoundManager, "audios", []);
 __publicField(SoundManager, "analysers", []);
 __publicField(SoundManager, "contexts", []);
 __publicField(SoundManager, "_volume", VOLUME);
+var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
+var freeSelf = typeof self == "object" && self && self.Object === Object && self;
+var root = freeGlobal || freeSelf || Function("return this")();
+var Symbol$1 = root.Symbol;
+var objectProto$6 = Object.prototype;
+var hasOwnProperty$4 = objectProto$6.hasOwnProperty;
+var nativeObjectToString$1 = objectProto$6.toString;
+var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : void 0;
+function getRawTag(value) {
+  var isOwn = hasOwnProperty$4.call(value, symToStringTag$1), tag = value[symToStringTag$1];
+  try {
+    value[symToStringTag$1] = void 0;
+    var unmasked = true;
+  } catch (e) {
+  }
+  var result = nativeObjectToString$1.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag$1] = tag;
+    } else {
+      delete value[symToStringTag$1];
+    }
+  }
+  return result;
+}
+var objectProto$5 = Object.prototype;
+var nativeObjectToString = objectProto$5.toString;
+function objectToString(value) {
+  return nativeObjectToString.call(value);
+}
+var nullTag = "[object Null]", undefinedTag = "[object Undefined]";
+var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : void 0;
+function baseGetTag(value) {
+  if (value == null) {
+    return value === void 0 ? undefinedTag : nullTag;
+  }
+  return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
+}
+function isObjectLike(value) {
+  return value != null && typeof value == "object";
+}
+var isArray = Array.isArray;
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == "object" || type == "function");
+}
+var asyncTag = "[object AsyncFunction]", funcTag$1 = "[object Function]", genTag = "[object GeneratorFunction]", proxyTag = "[object Proxy]";
+function isFunction(value) {
+  if (!isObject(value)) {
+    return false;
+  }
+  var tag = baseGetTag(value);
+  return tag == funcTag$1 || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+var coreJsData = root["__core-js_shared__"];
+var maskSrcKey = function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
+  return uid ? "Symbol(src)_1." + uid : "";
+}();
+function isMasked(func) {
+  return !!maskSrcKey && maskSrcKey in func;
+}
+var funcProto$1 = Function.prototype;
+var funcToString$1 = funcProto$1.toString;
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString$1.call(func);
+    } catch (e) {
+    }
+    try {
+      return func + "";
+    } catch (e) {
+    }
+  }
+  return "";
+}
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+var funcProto = Function.prototype, objectProto$4 = Object.prototype;
+var funcToString = funcProto.toString;
+var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
+var reIsNative = RegExp(
+  "^" + funcToString.call(hasOwnProperty$3).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+);
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+function getValue(object, key) {
+  return object == null ? void 0 : object[key];
+}
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : void 0;
+}
+var WeakMap$1 = getNative(root, "WeakMap");
+function noop() {
+}
+var MAX_SAFE_INTEGER = 9007199254740991;
+function isLength(value) {
+  return typeof value == "number" && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+function isArrayLike(value) {
+  return value != null && isLength(value.length) && !isFunction(value);
+}
+var objectProto$3 = Object.prototype;
+function isPrototype(value) {
+  var Ctor = value && value.constructor, proto = typeof Ctor == "function" && Ctor.prototype || objectProto$3;
+  return value === proto;
+}
+var argsTag$1 = "[object Arguments]";
+function baseIsArguments(value) {
+  return isObjectLike(value) && baseGetTag(value) == argsTag$1;
+}
+var objectProto$2 = Object.prototype;
+var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
+var propertyIsEnumerable = objectProto$2.propertyIsEnumerable;
+var isArguments = baseIsArguments(/* @__PURE__ */ function() {
+  return arguments;
+}()) ? baseIsArguments : function(value) {
+  return isObjectLike(value) && hasOwnProperty$2.call(value, "callee") && !propertyIsEnumerable.call(value, "callee");
+};
+const isArguments$1 = isArguments;
+function stubFalse() {
+  return false;
+}
+var freeExports$1 = typeof exports == "object" && exports && !exports.nodeType && exports;
+var freeModule$1 = freeExports$1 && typeof module == "object" && module && !module.nodeType && module;
+var moduleExports$1 = freeModule$1 && freeModule$1.exports === freeExports$1;
+var Buffer2 = moduleExports$1 ? root.Buffer : void 0;
+var nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : void 0;
+var isBuffer = nativeIsBuffer || stubFalse;
+const isBuffer$1 = isBuffer;
+var argsTag = "[object Arguments]", arrayTag = "[object Array]", boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object Error]", funcTag = "[object Function]", mapTag$2 = "[object Map]", numberTag = "[object Number]", objectTag$1 = "[object Object]", regexpTag = "[object RegExp]", setTag$2 = "[object Set]", stringTag = "[object String]", weakMapTag$1 = "[object WeakMap]";
+var arrayBufferTag = "[object ArrayBuffer]", dataViewTag$1 = "[object DataView]", float32Tag = "[object Float32Array]", float64Tag = "[object Float64Array]", int8Tag = "[object Int8Array]", int16Tag = "[object Int16Array]", int32Tag = "[object Int32Array]", uint8Tag = "[object Uint8Array]", uint8ClampedTag = "[object Uint8ClampedArray]", uint16Tag = "[object Uint16Array]", uint32Tag = "[object Uint32Array]";
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] = typedArrayTags[int8Tag] = typedArrayTags[int16Tag] = typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] = typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] = typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] = typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] = typedArrayTags[dataViewTag$1] = typedArrayTags[dateTag] = typedArrayTags[errorTag] = typedArrayTags[funcTag] = typedArrayTags[mapTag$2] = typedArrayTags[numberTag] = typedArrayTags[objectTag$1] = typedArrayTags[regexpTag] = typedArrayTags[setTag$2] = typedArrayTags[stringTag] = typedArrayTags[weakMapTag$1] = false;
+function baseIsTypedArray(value) {
+  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
+}
+function baseUnary(func) {
+  return function(value) {
+    return func(value);
+  };
+}
+var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
+var freeModule = freeExports && typeof module == "object" && module && !module.nodeType && module;
+var moduleExports = freeModule && freeModule.exports === freeExports;
+var freeProcess = moduleExports && freeGlobal.process;
+var nodeUtil = function() {
+  try {
+    var types = freeModule && freeModule.require && freeModule.require("util").types;
+    if (types) {
+      return types;
+    }
+    return freeProcess && freeProcess.binding && freeProcess.binding("util");
+  } catch (e) {
+  }
+}();
+var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
+const isTypedArray$1 = isTypedArray;
+function overArg(func, transform) {
+  return function(arg) {
+    return func(transform(arg));
+  };
+}
+var nativeKeys = overArg(Object.keys, Object);
+var objectProto$1 = Object.prototype;
+var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
+function baseKeys(object) {
+  if (!isPrototype(object)) {
+    return nativeKeys(object);
+  }
+  var result = [];
+  for (var key in Object(object)) {
+    if (hasOwnProperty$1.call(object, key) && key != "constructor") {
+      result.push(key);
+    }
+  }
+  return result;
+}
+var Map = getNative(root, "Map");
+var DataView = getNative(root, "DataView");
+var Promise$1 = getNative(root, "Promise");
+var Set$1 = getNative(root, "Set");
+var mapTag$1 = "[object Map]", objectTag = "[object Object]", promiseTag = "[object Promise]", setTag$1 = "[object Set]", weakMapTag = "[object WeakMap]";
+var dataViewTag = "[object DataView]";
+var dataViewCtorString = toSource(DataView), mapCtorString = toSource(Map), promiseCtorString = toSource(Promise$1), setCtorString = toSource(Set$1), weakMapCtorString = toSource(WeakMap$1);
+var getTag = baseGetTag;
+if (DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag || Map && getTag(new Map()) != mapTag$1 || Promise$1 && getTag(Promise$1.resolve()) != promiseTag || Set$1 && getTag(new Set$1()) != setTag$1 || WeakMap$1 && getTag(new WeakMap$1()) != weakMapTag) {
+  getTag = function(value) {
+    var result = baseGetTag(value), Ctor = result == objectTag ? value.constructor : void 0, ctorString = Ctor ? toSource(Ctor) : "";
+    if (ctorString) {
+      switch (ctorString) {
+        case dataViewCtorString:
+          return dataViewTag;
+        case mapCtorString:
+          return mapTag$1;
+        case promiseCtorString:
+          return promiseTag;
+        case setCtorString:
+          return setTag$1;
+        case weakMapCtorString:
+          return weakMapTag;
+      }
+    }
+    return result;
+  };
+}
+const getTag$1 = getTag;
+var mapTag = "[object Map]", setTag = "[object Set]";
+var objectProto = Object.prototype;
+var hasOwnProperty = objectProto.hasOwnProperty;
+function isEmpty(value) {
+  if (value == null) {
+    return true;
+  }
+  if (isArrayLike(value) && (isArray(value) || typeof value == "string" || typeof value.splice == "function" || isBuffer$1(value) || isTypedArray$1(value) || isArguments$1(value))) {
+    return !value.length;
+  }
+  var tag = getTag$1(value);
+  if (tag == mapTag || tag == setTag) {
+    return !value.size;
+  }
+  if (isPrototype(value)) {
+    return !baseKeys(value).length;
+  }
+  for (var key in value) {
+    if (hasOwnProperty.call(value, key)) {
+      return false;
+    }
+  }
+  return true;
+}
 var MotionPreloadStrategy = /* @__PURE__ */ ((MotionPreloadStrategy2) => {
   MotionPreloadStrategy2["ALL"] = "ALL";
   MotionPreloadStrategy2["IDLE"] = "IDLE";
@@ -1010,7 +1280,6 @@ class MotionManager extends utils.EventEmitter {
       }
       let soundURL;
       const isBase64Content = sound && sound.startsWith("data:");
-      console.log(onFinish);
       if (sound && !isBase64Content) {
         const A = document.createElement("a");
         A.href = sound;
@@ -1137,7 +1406,6 @@ class MotionManager extends utils.EventEmitter {
             (that = this) => {
               console.log("Audio finished playing");
               onFinish == null ? void 0 : onFinish();
-              console.log(onFinish);
               resetExpression && expression && that.expressionManager && that.expressionManager.resetExpression();
               that.currentAudio = void 0;
             },
@@ -1162,7 +1430,7 @@ class MotionManager extends utils.EventEmitter {
         }
       }
       const motion = yield this.loadMotion(group, index);
-      if (audio) {
+      if (audio && !isEmpty(audio.src)) {
         const readyToPlay = SoundManager.play(audio).catch(
           (e) => logger.warn(this.tag, "Failed to play audio", audio.src, e)
         );
@@ -1171,7 +1439,7 @@ class MotionManager extends utils.EventEmitter {
         }
       }
       if (!this.state.start(motion, group, index, priority)) {
-        if (audio) {
+        if (audio && !isEmpty(audio.src)) {
           SoundManager.dispose(audio);
           this.currentAudio = void 0;
         }
@@ -1296,9 +1564,9 @@ class MotionManager extends utils.EventEmitter {
     this.emit("destroy");
     this.stopAllMotions();
     (_a = this.expressionManager) == null ? void 0 : _a.destroy();
-    const self = this;
-    self.definitions = void 0;
-    self.motionGroups = void 0;
+    const self2 = this;
+    self2.definitions = void 0;
+    self2.motionGroups = void 0;
   }
 }
 const tempBounds = { x: 0, y: 0, width: 0, height: 0 };
@@ -1363,10 +1631,10 @@ class InternalModel extends utils.EventEmitter {
    * Sets up the model's size and local transform by the model's layout.
    */
   setupLayout() {
-    const self = this;
+    const self2 = this;
     const size = this.getSize();
-    self.originalWidth = size[0];
-    self.originalHeight = size[1];
+    self2.originalWidth = size[0];
+    self2.originalHeight = size[1];
     const layout = Object.assign(
       {
         width: LOGICAL_WIDTH,
@@ -1375,8 +1643,8 @@ class InternalModel extends utils.EventEmitter {
       this.getLayout()
     );
     this.localTransform.scale(layout.width / LOGICAL_WIDTH, layout.height / LOGICAL_HEIGHT);
-    self.width = this.originalWidth * this.localTransform.a;
-    self.height = this.originalHeight * this.localTransform.d;
+    self2.width = this.originalWidth * this.localTransform.a;
+    self2.height = this.originalHeight * this.localTransform.d;
     const offsetX = layout.x !== void 0 && layout.x - layout.width / 2 || layout.centerX !== void 0 && layout.centerX || layout.left !== void 0 && layout.left - layout.width / 2 || layout.right !== void 0 && layout.right + layout.width / 2 || 0;
     const offsetY = layout.y !== void 0 && layout.y - layout.height / 2 || layout.centerY !== void 0 && layout.centerY || layout.top !== void 0 && layout.top - layout.height / 2 || layout.bottom !== void 0 && layout.bottom + layout.height / 2 || 0;
     this.localTransform.translate(this.width * offsetX, -this.height * offsetY);
@@ -1632,8 +1900,6 @@ function createTexture(url, options = {}) {
     resource.load().then(() => resolve(texture)).catch(errorHandler);
   });
   return resource._live2d_load;
-}
-function noop() {
 }
 const TAG = "Live2DFactory";
 const urlToJSON = (context, next) => __async(void 0, null, function* () {
