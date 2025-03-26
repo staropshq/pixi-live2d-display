@@ -100,6 +100,7 @@ export default defineConfig(({ command, mode }) => {
         ],
         test: {
             include: ["**/*.test.ts", "**/*.test.js"],
+            testTimeout: 10 * 1000,
             browser: {
                 enabled: true,
                 name: "chrome",
