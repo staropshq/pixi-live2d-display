@@ -38,6 +38,7 @@ jobs:
           key: ${{ hashFiles('scripts/setup.js') }}
 
       - run: npm ci
+      - run: npm install @rollup/rollup-linux-x64-gnu --force
 
       - name: Set up core files
         if: steps.cache-core.outputs.cache-hit != 'true'
