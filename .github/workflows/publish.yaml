@@ -1,9 +1,8 @@
 name: Publish Package to npmjs
 on:
-  # DISABLED
-  # release:
-  #   types: [published]
-  # workflow_dispatch:
+  release:
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
