@@ -143,7 +143,7 @@ export default defineConfig(({ command, mode }) => {
                             return true;
                         });
 
-                        return [...files, ...stabilityTestFiles];
+                        return [...files, ...stabilityTestFiles, ...bundleTestFiles];
                     }
                 },
             },
