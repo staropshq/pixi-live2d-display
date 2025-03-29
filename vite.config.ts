@@ -101,6 +101,7 @@ export default defineConfig(({ command, mode }) => {
         test: {
             include: ["**/*.test.ts", "**/*.test.js"],
             testTimeout: 10 * 1000,
+            fileParallelism: false,
             browser: {
                 enabled: true,
                 name: "chrome",
@@ -143,7 +144,7 @@ export default defineConfig(({ command, mode }) => {
                             return true;
                         });
 
-                        return [...files, ...stabilityTestFiles];
+                        return [...files, ...stabilityTestFiles, ...bundleTestFiles];
                     }
                 },
             },
