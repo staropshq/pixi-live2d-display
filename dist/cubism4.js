@@ -10826,6 +10826,9 @@ var __async = (__this, __arguments, generator) => {
         index: null
       };
       this.renderer.startUp(gl);
+      if (!this.renderer._clippingManager) {
+        return;
+      }
       this.renderer._clippingManager._currentFrameNo = glContextID;
       this.renderer._clippingManager._maskTexture = void 0;
       CubismShader_WebGL.getInstance()._shaderSets = [];
