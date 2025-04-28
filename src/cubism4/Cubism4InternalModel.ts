@@ -142,6 +142,11 @@ export class Cubism4InternalModel extends InternalModel {
             index: null,
         };
         this.renderer.startUp(gl);
+
+        if(!this.renderer._clippingManager) {
+            return;
+        }
+
         this.renderer._clippingManager._currentFrameNo = glContextID;
         this.renderer._clippingManager._maskTexture = undefined;
         CubismShader_WebGL.getInstance()._shaderSets = [];
