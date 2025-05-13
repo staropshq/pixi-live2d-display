@@ -1003,7 +1003,6 @@ var __async = (__this, __arguments, generator) => {
   }()) ? baseIsArguments : function(value) {
     return isObjectLike(value) && hasOwnProperty$2.call(value, "callee") && !propertyIsEnumerable.call(value, "callee");
   };
-  const isArguments$1 = isArguments;
   function stubFalse() {
     return false;
   }
@@ -1013,7 +1012,6 @@ var __async = (__this, __arguments, generator) => {
   var Buffer2 = moduleExports$1 ? root.Buffer : void 0;
   var nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : void 0;
   var isBuffer = nativeIsBuffer || stubFalse;
-  const isBuffer$1 = isBuffer;
   var argsTag = "[object Arguments]", arrayTag = "[object Array]", boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object Error]", funcTag = "[object Function]", mapTag$2 = "[object Map]", numberTag = "[object Number]", objectTag$1 = "[object Object]", regexpTag = "[object RegExp]", setTag$2 = "[object Set]", stringTag = "[object String]", weakMapTag$1 = "[object WeakMap]";
   var arrayBufferTag = "[object ArrayBuffer]", dataViewTag$1 = "[object DataView]", float32Tag = "[object Float32Array]", float64Tag = "[object Float64Array]", int8Tag = "[object Int8Array]", int16Tag = "[object Int16Array]", int32Tag = "[object Int32Array]", uint8Tag = "[object Uint8Array]", uint8ClampedTag = "[object Uint8ClampedArray]", uint16Tag = "[object Uint16Array]", uint32Tag = "[object Uint32Array]";
   var typedArrayTags = {};
@@ -1043,7 +1041,6 @@ var __async = (__this, __arguments, generator) => {
   }();
   var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
   var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
-  const isTypedArray$1 = isTypedArray;
   function overArg(func, transform) {
     return function(arg) {
       return func(transform(arg));
@@ -1092,7 +1089,6 @@ var __async = (__this, __arguments, generator) => {
       return result;
     };
   }
-  const getTag$1 = getTag;
   var mapTag = "[object Map]", setTag = "[object Set]";
   var objectProto = Object.prototype;
   var hasOwnProperty = objectProto.hasOwnProperty;
@@ -1100,10 +1096,10 @@ var __async = (__this, __arguments, generator) => {
     if (value == null) {
       return true;
     }
-    if (isArrayLike(value) && (isArray(value) || typeof value == "string" || typeof value.splice == "function" || isBuffer$1(value) || isTypedArray$1(value) || isArguments$1(value))) {
+    if (isArrayLike(value) && (isArray(value) || typeof value == "string" || typeof value.splice == "function" || isBuffer(value) || isTypedArray(value) || isArguments(value))) {
       return !value.length;
     }
-    var tag = getTag$1(value);
+    var tag = getTag(value);
     if (tag == mapTag || tag == setTag) {
       return !value.size;
     }
