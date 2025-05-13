@@ -3,6 +3,11 @@ import { logger, remove } from "@/utils";
 const TAG = "SoundManager";
 export const VOLUME = 0.5;
 
+const audioListenersWeakMap = new WeakMap();
+const audioCanplaythroughWeakMap = new WeakMap();
+const audioContextWeakMap = new WeakMap<HTMLAudioElement, AudioContext>();
+const audioAnalyserWeakMap = new WeakMap<HTMLAudioElement, AnalyserNode>();
+const audioSourceWeakMap = new WeakMap<HTMLAudioElement, MediaElementAudioSourceNode>();
 /**
  * Manages all the sounds.
  */
@@ -49,17 +54,19 @@ export class SoundManager {
         audio.preload = "auto";
         // audio.autoplay = true;
         audio.crossOrigin = crossOrigin!;
-
-        audio.addEventListener("ended", () => {
-            this.dispose(audio);
-            onFinish?.();
+        audioListenersWeakMap.set(audio, {
+            ended: () => {
+                this.dispose(audio);
+                onFinish?.();
+            },
+            error: (e: ErrorEvent) => {
+                this.dispose(audio);
+                logger.warn(TAG, `Error occurred on "${file}"`, e.error);
+                onError?.(e.error);
+            },
         });
-
-        audio.addEventListener("error", (e: ErrorEvent) => {
-            this.dispose(audio);
-            logger.warn(TAG, `Error occurred on "${file}"`, e.error);
-            onError?.(e.error);
-        });
+        audio.addEventListener("ended", audioListenersWeakMap.get(audio).ended);
+        audio.addEventListener("error", audioListenersWeakMap.get(audio).error);
 
         this.audios.push(audio);
 
@@ -82,6 +89,7 @@ export class SoundManager {
             if (audio.readyState === audio.HAVE_ENOUGH_DATA) {
                 resolve();
             } else {
+                audioCanplaythroughWeakMap.set(audio, resolve);
                 audio.addEventListener("canplaythrough", resolve as () => void);
             }
         });
@@ -90,6 +98,7 @@ export class SoundManager {
     static addContext(audio: HTMLAudioElement): AudioContext {
         /* Create an AudioContext */
         const context = new AudioContext();
+        audioContextWeakMap.set(audio, context);
 
         this.contexts.push(context);
         return context;
@@ -108,6 +117,8 @@ export class SoundManager {
         source.connect(analyser);
         analyser.connect(context.destination);
 
+        audioSourceWeakMap.set(audio, source);
+        audioAnalyserWeakMap.set(audio, analyser);
         this.analysers.push(analyser);
         return analyser;
     }
@@ -138,8 +149,23 @@ export class SoundManager {
      */
     static dispose(audio: HTMLAudioElement): void {
         audio.pause();
+        audio.removeEventListener("ended", audioListenersWeakMap.get(audio)?.ended);
+        audio.removeEventListener("error", audioListenersWeakMap.get(audio)?.error);
+        audio.removeEventListener("canplaythrough", audioCanplaythroughWeakMap.get(audio));
+        audioListenersWeakMap.delete(audio);
+        audioCanplaythroughWeakMap.delete(audio);
+        const context = audioContextWeakMap.get(audio);
+        audioContextWeakMap.delete(audio);
+        context?.close();
+        const analyser = audioAnalyserWeakMap.get(audio);
+        audioAnalyserWeakMap.delete(audio);
+        analyser?.disconnect();
+        const source = audioSourceWeakMap.get(audio);
+        audioSourceWeakMap.delete(audio);
+        source?.disconnect();
         audio.removeAttribute("src");
-
+        remove(this.analysers, analyser);
+        remove(this.contexts, context);
         remove(this.audios, audio);
     }
 

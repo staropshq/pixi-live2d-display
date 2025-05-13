@@ -6,6 +6,7 @@ import { SoundManager, VOLUME } from "@/cubism-common/SoundManager";
 import { logger } from "@/utils";
 import { utils } from "@pixi/core";
 import type { JSONObject, Mutable } from "../types/helpers";
+import { isEmpty } from "lodash-es";
 
 export interface MotionManagerOptions {
     /**
@@ -256,8 +257,6 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
         let soundURL: string | undefined;
         const isBase64Content = sound && sound.startsWith("data:");
 
-        console.log(onFinish)
-
         if (sound && !isBase64Content) {
             const A = document.createElement("a");
             A.href = sound;
@@ -274,7 +273,7 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
                 audio = SoundManager.add(
                     file,
                     (that = this) => {
-                        console.log('Audio finished playing'); // Add this line
+                        console.log("Audio finished playing"); // Add this line
                         onFinish?.();
                         resetExpression &&
                             expression &&
@@ -283,7 +282,7 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
                         that.currentAudio = undefined;
                     }, // reset expression when audio is done
                     (e, that = this) => {
-                        console.log('Error during audio playback:', e); // Add this line
+                        console.log("Error during audio playback:", e); // Add this line
                         onError?.(e);
                         resetExpression &&
                             expression &&
@@ -424,9 +423,8 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
                 audio = SoundManager.add(
                     file,
                     (that = this) => {
-                        console.log('Audio finished playing'); // Add this line
+                        console.log("Audio finished playing"); // Add this line
                         onFinish?.();
-                        console.log(onFinish)
                         resetExpression &&
                             expression &&
                             that.expressionManager &&
@@ -434,7 +432,7 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
                         that.currentAudio = undefined;
                     }, // reset expression when audio is done
                     (e, that = this) => {
-                        console.log('Error during audio playback:', e); // Add this line
+                        console.log("Error during audio playback:", e); // Add this line
                         onError?.(e);
                         resetExpression &&
                             expression &&
@@ -463,7 +461,8 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
 
         const motion = await this.loadMotion(group, index);
 
-        if (audio) {
+        // audio may be dispose in test case "handles race conditions"
+        if (audio && !isEmpty(audio.src)) {
             const readyToPlay = SoundManager.play(audio).catch((e) =>
                 logger.warn(this.tag, "Failed to play audio", audio!.src, e),
             );
@@ -475,7 +474,8 @@ export abstract class MotionManager<Motion = any, MotionSpec = any> extends util
         }
 
         if (!this.state.start(motion, group, index, priority)) {
-            if (audio) {
+            // audio could be dispose in test case "handles race conditions"
+            if (audio && !isEmpty(audio.src)) {
                 SoundManager.dispose(audio);
                 this.currentAudio = undefined;
             }
