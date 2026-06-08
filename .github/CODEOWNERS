@@ -1,0 +1,15 @@
+# Require explicit owner review for repository automation, agent, editor, package,
+# and infrastructure files because these paths can introduce automatic execution
+# or high-impact configuration changes in public source repositories.
+.github/** @stevelizcano @staropshq/devs
+.claude/** @stevelizcano @staropshq/devs
+.gemini/** @stevelizcano @staropshq/devs
+.cursor/** @stevelizcano @staropshq/devs
+.vscode/** @stevelizcano @staropshq/devs
+package.json @stevelizcano @staropshq/devs
+package-lock.json @stevelizcano @staropshq/devs
+pnpm-lock.yaml @stevelizcano @staropshq/devs
+yarn.lock @stevelizcano @staropshq/devs
+binding.gyp @stevelizcano @staropshq/devs
+Gemfile @stevelizcano @staropshq/devs
+*.tf @stevelizcano @staropshq/devs
